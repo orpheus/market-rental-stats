@@ -1,0 +1,27 @@
+{
+  "name": "market-rental-stats",
+  "version": "1.0.0",
+  "description": "get market rentals from nicehash and miningrigrentals",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "npx babel index.js --out-dir lib",
+    "start": "npx babel-node index"
+  },
+  "author": "ohryan",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/polyfill": "^7.0.0",
+    "chalk": "^2.4.1",
+    "dotenv": "^6.1.0",
+    "miningrigrentals-api-v2": "^1.1.0",
+    "nicehash-api": "^1.1.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
+    "@babel/node": "^7.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/preset-env": "^7.1.0"
+  }
+}
