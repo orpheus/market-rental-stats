@@ -94,10 +94,8 @@ export async function getMarketStats(mrrAPI, nhAPI, print) {
 		throw new Error(error(`Failed to get MRR scrypt price info: ${err}`))
 	}
 
-	//convert prices to BTC/TH/Hr
 	nhScryptPrice /= 24
 	mrrScryptPrice /= 24
-	// console.log(nhScryptPrice, mrrScryptPrice)
 
 	let mrrWeighted = mrrScryptPrice * mrrPercent
 	let nhWeighted = nhScryptPrice * nhPercent
@@ -108,9 +106,6 @@ export async function getMarketStats(mrrAPI, nhAPI, print) {
 		console.log(chalk.green.underline.bold(`Weighted`) + `:  ${chalk.bold(`${parseFloat(totalWeight).toFixed(6)}`)}`)
 		console.log(chalk.green.underline.bold(`MRR Weighted`) + `:  ${chalk.bold(`${parseFloat(mrrWeighted).toFixed(6)}`)}`)
 		console.log(chalk.green.underline.bold(`NiceHash Weighted`) + `:  ${chalk.bold(`${parseFloat(nhWeighted).toFixed(6)}`)}`)
-
-
-
 		console.log('\n')
 		console.log(chalk.bgRed.bold(`MiningRigRentals`) + `  ${chalk.red.bold(`${parseFloat(mrrPercent).toFixed(2)}`)}`)
 		console.log(chalk.red.bold.underline(`Hashpower (GH)`) + `: ${chalk.bold(`${parseFloat(mrrSpeed).toFixed(6)}`)}`)
@@ -119,9 +114,7 @@ export async function getMarketStats(mrrAPI, nhAPI, print) {
 		console.log(chalk.bgYellowBright.bold(`NiceHash`) + `  ${chalk.yellow.bold(`${parseFloat(nhPercent).toFixed(2)}`)}`)
 		console.log(chalk.yellow.bold.underline(`Hashpower (GH)`) + `: ${chalk.bold(`${parseFloat(nhSpeed).toFixed(6)}`)}`)
 		console.log(chalk.yellow.bold.underline(`Scrypt Price (BTC/TH/Hour)`) + `: ${chalk.bold(`${parseFloat(nhScryptPrice).toFixed(6)}`)}`)
-
 	}
-
 
 	return {
 		success: true,
