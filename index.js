@@ -71,20 +71,20 @@ export async function getMarketStats(mrrAPI, nhAPI, print) {
 
 	if (print) {
 		console.log(chalk.bgGreen.bold('__Market Stats__\n'))
-		console.log(chalk.bgRed.bold(`MiningRigRentals`) + `  ${chalk.red.bold(`${parseFloat(mrrPercent).toFixed(2)}%`)}`)
+		console.log(chalk.bgRed.bold(`MiningRigRentals`) + `  ${chalk.red.bold(`${parseFloat(mrrPercent*100).toFixed(2)}%`)}`)
 		console.log(chalk.red.underline(`Hashpower`) + `: ${chalk.bold(`${parseFloat(mrrSpeed).toFixed(6)}GH`)}`)
-		console.log(chalk.bgYellowBright.bold(`NiceHash`) + `  ${chalk.yellow.bold(`${parseFloat(nhPercent).toFixed(2)}%`)}`)
+		console.log(chalk.bgYellowBright.bold(`NiceHash`) + `  ${chalk.yellow.bold(`${parseFloat(nhPercent*100).toFixed(2)}%`)}`)
 		console.log(chalk.yellow.underline(`Hashpower`) + `: ${chalk.bold(`${parseFloat(nhSpeed).toFixed(6)}GH`)}`)
 	}
 
 	return {
 		NiceHash: {
 			speed: nhSpeed,
-			percentOfMarket: nhPercent
+			percentOfMarket: nhPercent*100
 		},
 		MiningRigRentals: {
 			speed: mrrSpeed,
-			percentOfMarket: mrrPercent
+			percentOfMarket: mrrPercent*100
 		}
 	}
 }
