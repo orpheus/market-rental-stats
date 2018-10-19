@@ -1,12 +1,12 @@
 {
   "name": "market-rental-stats",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "get market rentals from nicehash and miningrigrentals",
   "main": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "npx babel index.js --out-dir lib",
-    "start": "npx babel-node index"
+    "start": "npx babel-node demo"
   },
   "author": "ohryan",
   "license": "ISC",

@@ -24,7 +24,7 @@ const error = chalk.bold.red;
  * @param {Boolean} print=false - Prints the
  * @returns {Promise<Object>}
  */
-export async function getMarketStats(mrrAPI, nhAPI, print) {
+export default async function getMarketStats(mrrAPI, nhAPI, print = false) {
 	if (mrrAPI && nhAPI) {
 		mrr = new MiningRigRentals(mrrAPI)
 		nh = new NiceHash(nhAPI)
@@ -132,5 +132,4 @@ export async function getMarketStats(mrrAPI, nhAPI, print) {
 	}
 }
 
-getMarketStats(undefined, undefined, true)
 
