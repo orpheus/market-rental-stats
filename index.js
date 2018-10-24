@@ -20,14 +20,21 @@ let nh = new NiceHash(nh_api_key, nH_api_id);
 const error = chalk.bold.red;
 
 /**
- *
- * @param {Boolean} print=false - Prints the
+ * @param {Boolean} useApiKeys=false - tell the class whether the next two params are api keys or JS Classes
+ * @param {(MiningRigRentals|Object)} mrrAPI - Either a MiningRigRentals constructor or MRR Apikeys to init one
+ * @param {(NiceHash|Object)} nhAPI - Either a NiceHash constructor or NH Apikeys to init one
+ * @param {Boolean} print=false - Prints the results
  * @returns {Promise<Object>}
  */
-export default async function getMarketStats(mrrAPI, nhAPI, print = false) {
-	if (mrrAPI && nhAPI) {
+export default async function getMarketStats(useApiKeys = false, mrrAPI, nhAPI, print = false) {
+	if (useApiKeys) {
 		mrr = new MiningRigRentals(mrrAPI)
 		nh = new NiceHash(nhAPI)
+	} else {
+		if (mrrAPI && nhAPI) {
+			mrr = mrrAPI
+			nh = nhAPI
+		}
 	}
 
 	let europe_orders;
@@ -36,10 +43,10 @@ export default async function getMarketStats(mrrAPI, nhAPI, print = false) {
 	} catch (err) {
 		throw new Error(error(`Failed to get European NiceHash orders: ${err}`))
 	}
-	let nhSpeed = 0;
+	let nhSpeedGH = 0; //GH
 
 	for (let order of europe_orders) {
-		nhSpeed += Number(order.accepted_speed)
+		nhSpeedGH += Number(order.accepted_speed)
 	}
 
 	let american_orders;
@@ -50,7 +57,7 @@ export default async function getMarketStats(mrrAPI, nhAPI, print = false) {
 	}
 
 	for (let order of american_orders) {
-		nhSpeed += Number(order.accepted_speed)
+		nhSpeedGH += Number(order.accepted_speed)
 	}
 
 	let res;
@@ -59,15 +66,16 @@ export default async function getMarketStats(mrrAPI, nhAPI, print = false) {
 	} catch (err) {
 		throw new Error(error(`Failed to get rig info from MiningRigRentals: ${err}`))
 	}
-	let mrrRentedHash = 0
+	let mrrRentedHash = 0 //MH
 	if (res.success && res.data) {
 		mrrRentedHash = res.data.stats.rented.hash.hash
 	}
-	let mrrSpeed = mrrRentedHash / 1000
 
-	let totalSpeed = mrrSpeed + nhSpeed
-	let mrrPercent = mrrSpeed/totalSpeed
-	let nhPercent = nhSpeed/totalSpeed
+	let mrrSpeedGH = mrrRentedHash / 1000 //GH
+
+	let totalSpeedGH = mrrSpeedGH + nhSpeedGH
+	let mrrMarketShare = mrrSpeedGH/totalSpeedGH
+	let nhMarketShare = nhSpeedGH/totalSpeedGH
 
 	let globalStats;
 	try {
@@ -75,59 +83,60 @@ export default async function getMarketStats(mrrAPI, nhAPI, print = false) {
 	} catch (err) {
 		throw new Error(error(`Failed to get NiceHash stats info: ${err}`))
 	}
-	let nhScryptPrice; //    BTC/TH/DAY
+	let nhScryptPriceBtcThDay; //    BTC/TH/DAY
 	for (let stat of globalStats) {
 		if (stat.algo === "Scrypt") {
-			nhScryptPrice = stat.price;
+			nhScryptPriceBtcThDay = stat.price;
 			break
 		}
 	}
 
-	let mrrScryptPrice;
+	let mrrScryptPriceBtcThDay;
 	try {
 		let res = await mrr.getAlgo('scrypt')
 		if (res.success) {
-			mrrScryptPrice = res.data.stats.prices.last_10.amount
-			mrrScryptPrice *= 1000000 //convert to BTC/TH/Day from BTC/MH/Day
+			mrrScryptPriceBtcThDay = res.data.stats.prices.last_10.amount
+			mrrScryptPriceBtcThDay *= 1e6 //convert to BTC/TH/Day from BTC/MH/Day
 		}
 	} catch (err) {
 		throw new Error(error(`Failed to get MRR scrypt price info: ${err}`))
 	}
 
-	nhScryptPrice /= 24
-	mrrScryptPrice /= 24
+	//divide by 24 to get BTC/TH/Hour
+	let nhScryptPriceBtcThHour = nhScryptPriceBtcThDay / 24
+	let mrrScryptPriceBtcThHour = mrrScryptPriceBtcThDay / 24
 
-	let mrrWeighted = mrrScryptPrice * mrrPercent
-	let nhWeighted = nhScryptPrice * nhPercent
-	let totalWeight = mrrWeighted + nhWeighted
+	let mrrWeightedBtcThHour = mrrScryptPriceBtcThHour * mrrMarketShare
+	let nhWeightedBtcThHour = nhScryptPriceBtcThHour * nhMarketShare
+	let weightedAverageRentalCostBtcThHour = mrrWeightedBtcThHour + nhWeightedBtcThHour
 
 	if (print) {
 		console.log(chalk.bgGreen.bold('__Market Stats__'))
-		console.log(chalk.green.underline.bold(`Weighted`) + `:  ${chalk.bold(`${parseFloat(totalWeight).toFixed(6)}`)}`)
-		console.log(chalk.green.underline.bold(`MRR Weighted`) + `:  ${chalk.bold(`${parseFloat(mrrWeighted).toFixed(6)}`)}`)
-		console.log(chalk.green.underline.bold(`NiceHash Weighted`) + `:  ${chalk.bold(`${parseFloat(nhWeighted).toFixed(6)}`)}`)
+		console.log(chalk.green.underline.bold(`Weighted`) + `:  ${chalk.bold(`${parseFloat(weightedAverageRentalCostBtcThHour).toFixed(6)}`)}`)
+		console.log(chalk.green.underline.bold(`MRR Weighted`) + `:  ${chalk.bold(`${parseFloat(mrrWeightedBtcThHour).toFixed(6)}`)}`)
+		console.log(chalk.green.underline.bold(`NiceHash Weighted`) + `:  ${chalk.bold(`${parseFloat(nhWeightedBtcThHour).toFixed(6)}`)}`)
 		console.log('\n')
-		console.log(chalk.bgRed.bold(`MiningRigRentals`) + `  ${chalk.red.bold(`${parseFloat(mrrPercent).toFixed(2)}`)}`)
-		console.log(chalk.red.bold.underline(`Hashpower (GH)`) + `: ${chalk.bold(`${parseFloat(mrrSpeed).toFixed(6)}`)}`)
-		console.log(chalk.red.bold.underline(`Scrypt Price (BTC/TH/Hour)`) + `: ${chalk.bold(`${parseFloat(mrrScryptPrice).toFixed(6)}`)}`)
+		console.log(chalk.bgRed.bold(`MiningRigRentals`) + `  ${chalk.red.bold(`${parseFloat(mrrMarketShare).toFixed(2)}`)}`)
+		console.log(chalk.red.bold.underline(`Hashpower (GH)`) + `: ${chalk.bold(`${parseFloat(mrrSpeedGH).toFixed(6)}`)}`)
+		console.log(chalk.red.bold.underline(`Scrypt Price (BTC/TH/Hour)`) + `: ${chalk.bold(`${parseFloat(mrrScryptPriceBtcThHour).toFixed(6)}`)}`)
 		console.log('\n')
-		console.log(chalk.bgYellowBright.bold(`NiceHash`) + `  ${chalk.yellow.bold(`${parseFloat(nhPercent).toFixed(2)}`)}`)
-		console.log(chalk.yellow.bold.underline(`Hashpower (GH)`) + `: ${chalk.bold(`${parseFloat(nhSpeed).toFixed(6)}`)}`)
-		console.log(chalk.yellow.bold.underline(`Scrypt Price (BTC/TH/Hour)`) + `: ${chalk.bold(`${parseFloat(nhScryptPrice).toFixed(6)}`)}`)
+		console.log(chalk.bgYellowBright.bold(`NiceHash`) + `  ${chalk.yellow.bold(`${parseFloat(nhMarketShare).toFixed(2)}`)}`)
+		console.log(chalk.yellow.bold.underline(`Hashpower (GH)`) + `: ${chalk.bold(`${parseFloat(nhSpeedGH).toFixed(6)}`)}`)
+		console.log(chalk.yellow.bold.underline(`Scrypt Price (BTC/TH/Hour)`) + `: ${chalk.bold(`${parseFloat(nhScryptPriceBtcThHour).toFixed(6)}`)}`)
 	}
 
 	return {
 		success: true,
-		weighted: totalWeight,
+		weighted: weightedAverageRentalCostBtcThHour,
 		NiceHash: {
-			speed: nhSpeed,
-			percentOfMarket: nhPercent,
-			nhScryptPrice
+			nhSpeedGH,
+			nhMarketWeight: nhMarketShare,
+			nhScryptPrice: nhScryptPriceBtcThHour
 		},
 		MiningRigRentals: {
-			speed: mrrSpeed,
-			percentOfMarket: mrrPercent,
-			mrrScryptPrice
+			mrrSpeedGH,
+			mrrMarketWeight: mrrMarketShare,
+			mrrScryptPrice: mrrScryptPriceBtcThHour
 		}
 	}
 }

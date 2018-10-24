@@ -1,3 +1,3 @@
 import getMarketStats from './index'
 
-getMarketStats(undefined, undefined, true)
+getMarketStats(false, undefined, undefined, true)
