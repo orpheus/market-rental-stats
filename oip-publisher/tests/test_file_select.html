@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Test IPFS File Select</title>
+		<script src="ipfs-browser-add.js"></script>
+	</head>
+	<body>
+		<input type="file" multiple onchange="handleFiles(this.files)" />
+		<script type="text/javascript">
+			// let ipfs_api = window.IpfsApi('ipfs-dev.alexandria.io', 443, {
+			// 	protocol: 'https',
+			// 	headers: {
+			// 		"OIP-Auth": JSON.stringify({address:"oNRs1nuR1vUAjWJwhMtxJPQoTFAm9MWz1G", message:'1534278675842{"oip042":{}}', signature:"Hw2iuomv/fhYYoKX8bNroVXmOvbh/e9gqZjP+I9kZymHD72mqtDw1qjN6/Qh4nhTDOHI8mkxbWtsaLSTuCkSihU="})
+			// 	}
+			// })
+			
+			// ipfs_api.add(ipfs_api.Buffer.from("000000", "hex"), function(err, node){
+			// 	console.log(err)
+			// 	console.log(node)
+			// })
+
+			// let ipfs_node = window.Ipfs()
+
+			var handleFiles = function(files){
+				for (var file of files){
+					var upload = new window.XMLRequestIPFSAdd(file, {
+						"host": "ipfs-dev.alexandria.io",
+						"protocol": "https",
+						"port": 443,
+						"oip_auth": {
+							address:"oNRs1nuR1vUAjWJwhMtxJPQoTFAm9MWz1G", 
+							message:'1534278675842{"oip042":{}}', 
+							signature:"Hw2iuomv/fhYYoKX8bNroVXmOvbh/e9gqZjP+I9kZymHD72mqtDw1qjN6/Qh4nhTDOHI8mkxbWtsaLSTuCkSihU="
+						}
+					})
+
+					upload.onProgress((prog_obj) => {
+						console.log("Progress! " + JSON.stringify(prog_obj))
+					})
+
+					upload.start().then((ipfs_response) => {
+						console.log("Upload Complete! " + JSON.stringify(ipfs_response))
+					})
+				}
+
+				// ipfs_api.add(window.FileToStream(files[0]), (err, response) => {
+				// 	console.log(err);
+				// 	console.log(response)
+				// })
+
+
+
+
+				// var reader = new FileReader();
+				// reader.addEventListener("loadend", function(){
+				// 	console.log(reader.result)
+				// 	ipfs_api.util.addFromURL(reader.result, function(err, response){
+				// 		console.log(err)
+				// 		console.log(response)
+				// 	})
+				// })
+				// reader.readAsDataURL(files[0])
+
+
+
+
+				// var req = new XMLHttpRequest();
+				// req.addEventListener("load", function(){
+				// 	console.log(req.responseText);
+				// })
+				// req.addEventListener("data", function(data){
+				// 	console.log(data)
+				// })
+				// req.addEventListener("progress", function(prog){
+				// 	console.log(prog)
+				// })
+				// req.upload.onprogress = function(progress){
+				// 	console.log(progress)
+				// }
+				// req.upload.error = function(err){
+				// 	console.log("upload error ", err)
+				// }
+				// req.upload.abort = function(err){
+				// 	console.log("abort error ", err)
+				// }
+				// req.upload.load = function(data){
+				// 	console.log("Upload complete ", data)
+				// }
+				// req.upload.onloadend = function(load_end){
+				// 	console.log("Upload End ", load_end)
+				// 	console.log(req)
+				// }
+				// req.open("POST", "https://ipfs-dev.alexandria.io/api/v0/add?stream-channels=true")
+				// req.setRequestHeader("accept", "application/json")
+				// req.setRequestHeader("OIP-Auth", JSON.stringify({address:"oNRs1nuR1vUAjWJwhMtxJPQoTFAm9MWz1G", message:'1534278675842{"oip042":{}}', signature:"Hw2iuomv/fhYYoKX8bNroVXmOvbh/e9gqZjP+I9kZymHD72mqtDw1qjN6/Qh4nhTDOHI8mkxbWtsaLSTuCkSihU="}))
+
+				// req.enctype = "multipart/form-data";
+
+				// // req.setRequestHeader("Content-Type", "application/octet-stream")
+
+				// var form = new FormData();
+				// form.append("path", files[0], files[0].name);
+
+				// req.setRequestHeader("accept", "application/json")
+
+				// req.send(form)
+			}
+		</script>
+	</body>
+</html>
